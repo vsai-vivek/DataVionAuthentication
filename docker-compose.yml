@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: dauth-postgres
+    environment:
+      POSTGRES_DB: dauth
+      POSTGRES_USER: dauth_user
+      POSTGRES_PASSWORD: dauth_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - dauth-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: dauth-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - dauth-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: dauth-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@dauth.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - dauth-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  dauth-network:
+    driver: bridge

@@ -1,0 +1,132 @@
+spring:
+  application:
+    name: Dauth
+  
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:dauth}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        use_sql_comments: true
+  
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+  
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 60000
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+  
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  
+  ldap:
+    urls: ${LDAP_URLS:ldap://localhost:389}
+    base: ${LDAP_BASE:dc=example,dc=com}
+    username: ${LDAP_USERNAME:}
+    password: ${LDAP_PASSWORD:}
+    user-search-base: ${LDAP_USER_SEARCH_BASE:ou=users}
+    user-search-filter: ${LDAP_USER_SEARCH_FILTER:(uid={0})}
+    group-search-base: ${LDAP_GROUP_SEARCH_BASE:ou=groups}
+    group-search-filter: ${LDAP_GROUP_SEARCH_FILTER:(member={0})}
+
+# Application Configuration
+app:
+  jwt:
+    secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    access-token-expiration: 900000 # 15 minutes
+    refresh-token-expiration: 2592000000 # 30 days
+  
+  security:
+    cors:
+      allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200}
+      allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+      allowed-headers: "*"
+      allow-credentials: true
+      max-age: 3600
+    
+    rate-limit:
+      login:
+        max-attempts: 5
+        duration-minutes: 5
+      password-reset:
+        max-attempts: 3
+        duration-minutes: 60
+      registration:
+        max-attempts: 10
+        duration-minutes: 60
+    
+    account-lockout:
+      max-failed-attempts: 5
+      lockout-duration-minutes: 30
+    
+    password:
+      min-length: 8
+      require-uppercase: true
+      require-lowercase: true
+      require-digit: true
+      require-special-char: true
+  
+  email:
+    from: ${EMAIL_FROM:noreply@dauth.com}
+    verification-url: ${EMAIL_VERIFICATION_URL:http://localhost:8080/api/v1/auth/verify-email}
+    password-reset-url: ${EMAIL_PASSWORD_RESET_URL:http://localhost:8080/api/v1/auth/reset-password}
+    token-expiration-hours: 24
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# Logging Configuration
+logging:
+  level:
+    com.datavion.auth: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.ldap: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# OpenAPI Documentation
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
